@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title> WebRTC test </title>
+  <title> DPlayer test </title>
 </head>
 
 <body>
@@ -18,7 +18,9 @@
 <script>
 const dp = new DPlayer({
   container: document.getElementById('dplayer'),
+  live: true,
   autoplay: true,
+  preload: "metadata",
   video: {
       url: 'https://cctvtxyh5c.liveplay.myqcloud.com/wstv/dongfang_2_hd.m3u8',
       type: 'hls'
