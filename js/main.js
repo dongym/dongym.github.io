@@ -1,5 +1,8 @@
-'use strict';
-
+//'use strict';
+//import 'DPlayer/dist/DPlayer.min.css';
+// import DPlayer from 'DPlayer';
+  
+/*
 // On this codelab, you will be streaming only video (video: true).
 const mediaStreamConstraints = {
   video:  {
@@ -32,3 +35,11 @@ function handleLocalMediaStreamError(error) {
 // Initializes media stream.
 navigator.mediaDevices.getUserMedia(mediaStreamConstraints)
   .then(gotLocalMediaStream).catch(handleLocalMediaStreamError);
+*/
+const dp = new DPlayer({
+  container: document.getElementById('dplayer'),
+  video: {
+      url: 'demo.m3u8',
+      type: 'hls'
+  }
+});
