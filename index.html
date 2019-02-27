@@ -5,26 +5,56 @@
 </head>
 
 <body>
-  <video autoplay playsinline></video>
   <!--<script src="js/main.js"></script>-->
   <link class="dplayer-css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dplayer/dist/DPlayer.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flv.js/dist/flv.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js/dist/hls.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dashjs/dist/dash.all.min.js"></script>
-  <div id="dplayer"></div>
+
   <script src="https://cdn.jsdelivr.net/webtorrent/latest/webtorrent.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dplayer/dist/DPlayer.min.js"></script>
+  <div id="play-url" style="margin:auto;">
+      URL&nbsp;&nbsp;:
+      <input type="text" name="url" id="url" value="" placeholder="输入url" style="height:30px;width:400px; margin-left:5px" />
+      <button id="btn_play" onclick="play()" style="height:35px;width:60px; margin-left:5px">play</button>
+  </div>
+  <div id="dplayer" class="dplayer" style="width:640px;height:360px;margin-left:5px"></div>
 </body>
+<script type="text/javascript" src="http://libs.baidu.com/jquery/2.1.1/jquery.min.js"></script>
+
 <script>
-const dp = new DPlayer({
-  container: document.getElementById('dplayer'),
-  live: true,
-  autoplay: true,
-  preload: "metadata",
-  video: {
-      url: 'https://cctvtxyh5c.liveplay.myqcloud.com/wstv/dongfang_2_hd.m3u8',
-      type: 'hls'
+  function play() {
+    var url = $("#url").val();
+    if (url.trim() === '') {
+      alert("请输入url！");
+      return;
+    }
+    if (url.indexOf('m3u8') !== -1) {
+      const dp = new DPlayer({
+        container: document.getElementById('dplayer'),
+        live: true,
+        autoplay: true,
+        preload: "metadata",
+        video: {
+            url: url,
+            type: 'hls'
+        }
+      });
+    }
+   
+    const dp = new DPlayer({
+      container: document.getElementById('dplayer'),
+      logo: 'logo.png',
+      preload: "auto",
+      // screenshot: true,
+      video: {
+          url: url,
+          thumbnails: 'thumbnails.jpg',
+          type: 'flv'
+      }
+    });
+    
   }
-});
+  
 </script>
 </html>
