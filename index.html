@@ -15,7 +15,9 @@
   <script src="https://cdn.jsdelivr.net/npm/dplayer/dist/DPlayer.min.js"></script>
   <div id="play-url" style="margin:auto;">
       URL&nbsp;&nbsp;:
-      <input type="text" name="url" id="url" value="" placeholder="输入url" style="height:30px;width:400px; margin-left:5px" />
+      <!--https://api.dogecloud.com/player/get.m3u8?vcode=5ac682e6f8231991&userId=17&ext=.m3u8-->
+      <!--"https://api.dogecloud.com/player/get.flv?vcode=5ac682e6f8231991&userId=17&ext=.flv"-->
+      <input type="text" name="url" id="url" value="http://1255817909.vod2.myqcloud.com/400dd071vodcq1255817909/af3d23bc5285890794285803974/playlist.m3u8" placeholder="输入url" style="height:30px;width:400px; margin-left:5px" />
       <button id="btn_play" onclick="play()" style="height:35px;width:60px; margin-left:5px">play</button>
   </div>
   <div id="dplayer" class="dplayer" style="width:640px;height:360px;margin-left:5px"></div>
@@ -29,10 +31,11 @@
       alert("请输入url！");
       return;
     }
+    var dp;
     if (url.indexOf('m3u8') !== -1) {
-      const dp = new DPlayer({
+      /*
+      dp = new DPlayer({
         container: document.getElementById('dplayer'),
-        live: true,
         autoplay: true,
         preload: "metadata",
         video: {
@@ -40,19 +43,109 @@
             type: 'hls'
         }
       });
-    }
-   
-    const dp = new DPlayer({
+      */
+      dp = new DPlayer({
+        container: document.getElementById('dplayer'),
+        video: {
+          autoplay: true,
+          preload: "metadata",
+          url: url,
+          type: 'customHls',
+          customType: {
+              'customHls': function (video, player) {
+                  const hls = new Hls();
+                  hls.config.debug=true;
+                  hls.config.stretchShortVideoTrack = true;
+                  hls.loadSource(video.src);
+                  hls.attachMedia(video);
+              
+                  function onLevelLoaded (event, data) {
+                    var level_duration = data.details.totalduration;
+                  }
+                  hls.on(Hls.Events.INIT_PTS_FOUND, function (event, data) {
+                    console.log('HLS - player video INIT_PTS_FOUND', data);
+                  });
+                  hls.on(Hls.Events.MEDIA_ATTACHED, function (event, data) {
+                    console.log('HLS - player video MEDIA_ATTACHED', data);
+                  });
+                  hls.on(Hls.Events.LEVEL_LOADED, function (event, data) {
+                    console.log('HLS - player video LEVEL_LOADED', data);
+                  });
+                  
+                  hls.on(Hls.Events.FRAG_PARSING_DATA, function (event, data) {
+                    console.log('HLS - player video FRAG_PARSING_DATA', data);
+                  });
+              }
+          }
+        }
+      });
+    } else if (url.indexOf('flv') !== -1) {
+      dp = new DPlayer({
       container: document.getElementById('dplayer'),
-      logo: 'logo.png',
-      preload: "auto",
-      // screenshot: true,
       video: {
           url: url,
-          thumbnails: 'thumbnails.jpg',
-          type: 'auto'
-      }
+          type: 'customFlv',
+          logo: 'logo.png',
+          preload: "auto",
+          autoplay: true,
+          customType: {
+              'customFlv': function (video, player) {
+                  const flvPlayer = flvjs.createPlayer({
+                      type: 'flv',
+                      url: video.src
+                  });
+                  flvPlayer.attachMediaElement(video);
+                  flvPlayer.load();
+              }
+          }
+        }
+      });
+    } else {
+      dp = new DPlayer({
+        container: document.getElementById('dplayer'),
+        logo: 'logo.png',
+        preload: "auto",
+        autoplay: true,
+        // screenshot: true,
+        video: {
+            url: url,
+            // thumbnails: 'thumbnails.jpg',
+            type: 'auto'
+        }
+      });
+    }
+    // dp.seek(120);  // seek to 120s and play
+    dp.on('timeupdate', function () {
+      console.log('player timeupdate', dp.template.ptime.innerHTML);
     });
+
+    dp.on('waiting', function () {
+      console.log('player video waiting...');
+    })
+    dp.on('canplay', function () {
+      console.log('player video canplay');
+    })
+    dp.on('stalled', function () {
+      console.log('player video stalled');
+    })
+    dp.on('loadeddata', function () {
+      console.log('player video loadeddata');
+    })
+    dp.on('loadedmetadata', function () {
+      console.log('player video loadedmetadata');
+    })
+    
+    dp.on('loadstart', function () {
+      console.log('player video loadstart');
+    })
+    
+    dp.on('error', function () {
+      console.log('player video error', dp.video.error);
+    })
+    
+    dp.on('durationchange', function () {
+      console.log('player video durationchange', dp.video.duration);
+    })
     
   }
   
