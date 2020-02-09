@@ -1,153 +1,91 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <title> DPlayer test </title>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <title>flv.js demo</title>
+    <style>
+        .mainContainer {
+    display: block;
+    width: 1024px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.urlInput {
+    display: block;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+.centeredVideo {
+    display: block;
+    width: 100%;
+    height: 576px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: auto;
+}
+
+.controls {
+    display: block;
+    width: 100%;
+    text-align: left;
+    margin-left: auto;
+    margin-right: auto;
+}
+    </style>
 </head>
 
 <body>
-  <!--<script src="js/main.js"></script>-->
-  <link class="dplayer-css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dplayer/dist/DPlayer.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/flv.js/dist/flv.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js/dist/hls.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dashjs/dist/dash.all.min.js"></script>
+    <div class="mainContainer">
+        <video id="videoElement" class="centeredVideo" controls autoplay width="1024" height="576">Your browser is too old which doesn't support HTML5 video.</video>
+    </div>
+    <br>
+    <div class="controls">
+        <!--<button onclick="flv_load()">加载</button>-->
+        <button onclick="flv_start()">开始</button>
+        <button onclick="flv_pause()">暂停</button>
+        <button onclick="flv_destroy()">停止</button>
+        <input style="width:100px" type="text" name="seekpoint" />
+        <button onclick="flv_seekto()">跳转</button>
+    </div>
+    <script src="https://cdn.bootcss.com/flv.js/1.5.0/flv.js"></script>
+    <script>
+        var player = document.getElementById('videoElement');
+        if (flvjs.isSupported()) {
+            var flvPlayer = flvjs.createPlayer({
+                isLive: true,
+                type: 'flv',
+                url: 'https://txy.live-play.acgvideo.com/live-txy/536225/live_13535652_3972650.flv?wsSecret=fecef68479dc3b2e6a6a0554544a316c&wsTime=1581266100&trid=3f1e3006d71e4e03b5d608e01aec946a&pt=web&oi=2075452947&order=1&sig=no&platform=web&pSession=Ny2Zb8MY-cWep-44e4-5Rf9-pEACXymC957a'
+            });
+            flvPlayer.attachMediaElement(videoElement);
+            flvPlayer.load(); //加载
+        }
 
-  <script src="https://cdn.jsdelivr.net/webtorrent/latest/webtorrent.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dplayer/dist/DPlayer.min.js"></script>
-  <div id="play-url" style="margin:auto;">
-      URL&nbsp;&nbsp;:
-      <!--https://api.dogecloud.com/player/get.m3u8?vcode=5ac682e6f8231991&userId=17&ext=.m3u8-->
-      <!--"https://api.dogecloud.com/player/get.flv?vcode=5ac682e6f8231991&userId=17&ext=.flv"-->
-      <input type="text" name="url" id="url" value="http://1255817909.vod2.myqcloud.com/400dd071vodcq1255817909/af3d23bc5285890794285803974/playlist.m3u8" placeholder="输入url" style="height:30px;width:400px; margin-left:5px" />
-      <button id="btn_play" onclick="play()" style="height:35px;width:60px; margin-left:5px">play</button>
-  </div>
-  <div id="dplayer" class="dplayer" style="width:640px;height:360px;margin-left:5px"></div>
+        function flv_start() {
+            player.play();
+        }
+
+        function flv_pause() {
+            player.pause();
+        }
+
+        function flv_destroy() {
+            player.pause();
+            player.unload();
+            player.detachMediaElement();
+            player.destroy();
+            player = null;
+        }
+
+        function flv_seekto() {
+            player.currentTime = parseFloat(document.getElementsByName('seekpoint')[0].value);
+        }
+    </script>
 </body>
-<script type="text/javascript" src="https://libs.baidu.com/jquery/2.1.1/jquery.min.js"></script>
 
-<script>
-  function play() {
-    var url = $("#url").val();
-    if (url.trim() === '') {
-      alert("请输入url！");
-      return;
-    }
-    var dp;
-    if (url.indexOf('m3u8') !== -1) {
-      /*
-      dp = new DPlayer({
-        container: document.getElementById('dplayer'),
-        autoplay: true,
-        preload: "metadata",
-        video: {
-            url: url,
-            type: 'hls'
-        }
-      });
-      */
-      dp = new DPlayer({
-        container: document.getElementById('dplayer'),
-        video: {
-          autoplay: true,
-          preload: "metadata",
-          url: url,
-          type: 'customHls',
-          customType: {
-              'customHls': function (video, player) {
-                  const hls = new Hls();
-                  hls.config.debug=true;
-                  hls.config.stretchShortVideoTrack = true;
-                  hls.loadSource(video.src);
-                  hls.attachMedia(video);
-              
-                  function onLevelLoaded (event, data) {
-                    var level_duration = data.details.totalduration;
-                  }
-                  hls.on(Hls.Events.INIT_PTS_FOUND, function (event, data) {
-                    console.log('HLS - player video INIT_PTS_FOUND', data);
-                  });
-                  hls.on(Hls.Events.MEDIA_ATTACHED, function (event, data) {
-                    console.log('HLS - player video MEDIA_ATTACHED', data);
-                  });
-                  hls.on(Hls.Events.LEVEL_LOADED, function (event, data) {
-                    console.log('HLS - player video LEVEL_LOADED', data);
-                  });
-                  
-                  hls.on(Hls.Events.FRAG_PARSING_DATA, function (event, data) {
-                    console.log('HLS - player video FRAG_PARSING_DATA', data);
-                  });
-              }
-          }
-        }
-      });
-    } else if (url.indexOf('flv') !== -1) {
-      dp = new DPlayer({
-      container: document.getElementById('dplayer'),
-      video: {
-          url: url,
-          type: 'customFlv',
-          logo: 'logo.png',
-          preload: "auto",
-          autoplay: true,
-          customType: {
-              'customFlv': function (video, player) {
-                  const flvPlayer = flvjs.createPlayer({
-                      type: 'flv',
-                      url: video.src
-                  });
-                  flvPlayer.attachMediaElement(video);
-                  flvPlayer.load();
-              }
-          }
-        }
-      });
-    } else {
-      dp = new DPlayer({
-        container: document.getElementById('dplayer'),
-        logo: 'logo.png',
-        preload: "auto",
-        autoplay: true,
-        // screenshot: true,
-        video: {
-            url: url,
-            // thumbnails: 'thumbnails.jpg',
-            type: 'auto'
-        }
-      });
-    }
-    // dp.seek(120);  // seek to 120s and play
-    dp.on('timeupdate', function () {
-      console.log('player timeupdate', dp.template.ptime.innerHTML);
-    });
-
-    dp.on('waiting', function () {
-      console.log('player video waiting...');
-    })
-    dp.on('canplay', function () {
-      console.log('player video canplay');
-    })
-    dp.on('stalled', function () {
-      console.log('player video stalled');
-    })
-    dp.on('loadeddata', function () {
-      console.log('player video loadeddata');
-    })
-    dp.on('loadedmetadata', function () {
-      console.log('player video loadedmetadata');
-    })
-    
-    dp.on('loadstart', function () {
-      console.log('player video loadstart');
-    })
-    
-    dp.on('error', function () {
-      console.log('player video error', dp.video.error);
-    })
-    
-    dp.on('durationchange', function () {
-      console.log('player video durationchange', dp.video.duration);
-    })
-    
-  }
-  
-</script>
 </html>
